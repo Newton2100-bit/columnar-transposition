@@ -9,6 +9,7 @@ int main(int argc, char *argv[]){
 
 	int argument;
 	bool should_we_countinue = false;
+	bool using_file = false;
 	while((argument = getopt(argc, argv, ":k:f:")) != -1){
 		switch(argument){
 			case 'k':
@@ -17,6 +18,7 @@ int main(int argc, char *argv[]){
 				break;
 			case 'f':
 				filename = optarg;
+				using_file = true;
 				break;
 			default:
 				fprintf(stderr, "Usage :\n"
@@ -27,5 +29,18 @@ int main(int argc, char *argv[]){
 	}
 
 	if(!should_we_countinue) return 1;
+
+//	printf("we abtained the key :: %s.\n", key);
+	if(!using_file){
+		/* Here things are going on an array of characters
+		 * reading everything to a buffer 
+		 */
+
+
+	}else{
+		/* Things here will move away from stack and go to heap
+		 * for easier management and simplicity 
+		 */
+	}
 	return 0;
 }
