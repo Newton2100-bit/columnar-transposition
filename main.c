@@ -44,6 +44,7 @@ int main(int argc, char *argv[]){
 		 */
 		target_data = (char *)malloc(sizeof(char) * 4096 );
 		int offset = 0;
+		/* reading data from the stream */
 		while(true){
 			if(scanf("%[^'\n']", target_data + offset) == EOF)
 				break;
@@ -53,45 +54,17 @@ int main(int argc, char *argv[]){
 			offset++;
 		}
 		printf("size of the data we did read is %d.\n", strlen(target_data));
-		int margin = strlen(key) - strlen(target_data) % strlen(key);
-
-		printf("MARGIN FOUND IS %d.\n", margin);
-		final_size = strlen(target_data) + margin;
-		printf("%d converts to %d\n", strlen(target_data), final_size);
-		
-		int i = 0;
-		do{
-			//memset(target_data + strlen(target_data), '`', margin);
-			target_data[strlen(target_data) + i] = '~';
-			i++;
-		}while(i <= margin);
-		target_data[final_size] = '\0';
 		printf("we read >>>>>>>>>>>>>>>%s<<<<<<<<<<<<<", target_data);
 	}else{
 		/* Things here will move away from stack and go to heap
 		 * for easier management and simplicity 
 		 */
+		struct stat stats01;
 		target_fd = open(target_data, O_RDONLY);
-		struct stat file_size ;
-		fstat(target_fd, &file_size);
-		int actual_size = file_size.st_size ;
-		int margin = strlen(key) - actual_size % strlen(key);
-		final_size = actual_size + margin; 
-		// printf("%d converts to %d\n", actual_size, final_size);
-		/* The above statement is a source of many questions
-		 * that after a well analysis will prove code entirely
-		 * correct or entirely wrong 
-		 * in the area of reading data
-		 */
-		target_data = mmap(NULL,4096, PROT_READ, MAP_PRIVATE, target_fd, 0 );
+		fstat(target_fd, &stats01);
+		target_data = mmap(NULL,stats01.st_size, PROT_READ, MAP_PRIVATE, target_fd, 0 );
 		if(target_data != NULL)
 			fprintf(stderr, "Success mapping our file.\n");
-#if 0
-		printf("MARGIN FOUND IS %d.\n", margin);
-		printf("%d converts to %d\n", strlen(target_data), final_size);
-		printf("mapped file size is %d bytes.\n", strlen(target_data));
-#endif
-		strcpy(target_data, "```````````````");
 		 printf("we read >>>>>>>>>>>>>>>%s<<<<<<<<<<<<<", target_data);
 	}
 
