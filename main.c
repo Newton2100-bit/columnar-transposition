@@ -10,6 +10,7 @@
 
 int main(int argc, char *argv[]){
 	char *key = NULL;
+	char *filename;
 	char *target_data;;
 	int target_fd = -1;
 	int final_size;
@@ -24,7 +25,7 @@ int main(int argc, char *argv[]){
 				should_we_countinue = true;
 				break;
 			case 'f':
-				target_data = optarg;
+				filename = optarg;
 				using_file = true;
 				break;
 			default:
@@ -59,13 +60,17 @@ int main(int argc, char *argv[]){
 		/* Things here will move away from stack and go to heap
 		 * for easier management and simplicity 
 		 */
-		struct stat stats01;
-		target_fd = open(target_data, O_RDONLY);
-		fstat(target_fd, &stats01);
-		target_data = mmap(NULL,stats01.st_size, PROT_READ, MAP_PRIVATE, target_fd, 0 );
-		if(target_data != NULL)
-			fprintf(stderr, "Success mapping our file.\n");
-		 printf("we read >>>>>>>>>>>>>>>%s<<<<<<<<<<<<<", target_data);
+		int fd = open(filename, O_RDONLY);
+		struct stat file_size;
+		fstat(fd, &file_size);
+
+		target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+		if(target_data == MAP_FAILED){
+			perror("MMAP :: ");
+			return 1;
+		}
+		printf("SIZE :: %d.\n", strlen(target_data));
+		printf("DATA::\n%s", target_data);
 	}
 
 	char *cipher_text = (char *)malloc(final_size * sizeof(char));
