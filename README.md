@@ -8,6 +8,6 @@
   also better maintenace.
 
 - For the padding of columnar transposition i tend to go simple and use
-  nulls '\0' (well known in C) and leave any complexities to the
+  (`) since it is rare to find them in text and leave any complexities to the
 algorithims.
 
