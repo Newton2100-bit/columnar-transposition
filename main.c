@@ -1,11 +1,15 @@
 #include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
 
 
 int main(int argc, char *argv[]){
 	char *key = NULL;
-	char *filename;
+	char *target_data;;
+	int target_fd = -1;
 
 	int argument;
 	bool should_we_countinue = false;
@@ -17,20 +21,20 @@ int main(int argc, char *argv[]){
 				should_we_countinue = true;
 				break;
 			case 'f':
-				filename = optarg;
+				target_data = optarg;
 				using_file = true;
 				break;
 			default:
 				fprintf(stderr, "Usage :\n"
 						"%s -k key [-f filename]"
-						"\n",__FILE__);
+						"\n", __FILE__);
 		}
 
 	}
 
 	if(!should_we_countinue) return 1;
 
-//	printf("we abtained the key :: %s.\n", key);
+	//	printf("we abtained the key :: %s.\n", key);
 	if(!using_file){
 		/* Here things are going on an array of characters
 		 * reading everything to a buffer 
@@ -41,6 +45,16 @@ int main(int argc, char *argv[]){
 		/* Things here will move away from stack and go to heap
 		 * for easier management and simplicity 
 		 */
+		target_fd = open(target_data, O_RDONLY);
+		struct stat file_size ;
+		fstat(target_fd, &file_size);
+		int actual_size = file_size.st_size;
+		printf("The size is of %d bytes.\n", actual_size);
+
+		int final_size = actual_size +  (strlen(key) - actual_size % strlen(key));
+		printf("%d converts to %d\n", actual_size, final_size);
+		// target_data = mmap(NULL, );
+
 	}
 	return 0;
 }
