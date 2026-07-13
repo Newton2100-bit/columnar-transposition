@@ -10,4 +10,6 @@
 - For the padding of columnar transposition i tend to go simple and use
   nulls '\0' (well known in C) and leave any complexities to the
 algorithims.
+- we have options  (-k) for keys which is mandatory
+- and -f filename which is optinal.
 (This implementaton is intended to be in c.)
