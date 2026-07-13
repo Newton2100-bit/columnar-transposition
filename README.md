@@ -10,4 +10,4 @@
 - For the padding of columnar transposition i tend to go simple and use
   nulls '\0' (well known in C) and leave any complexities to the
 algorithims.
-
+(This implementaton is intended to be in c.)
