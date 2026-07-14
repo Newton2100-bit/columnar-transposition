@@ -42,6 +42,7 @@ void close_it(inc *ds);
 void finalize();
 void print_result(inc *);
 void transpose();
+void usage(void);
 
 int main(int argc, char *argv[]){
 
@@ -60,20 +61,29 @@ int main(int argc, char *argv[]){
 				file_output = optarg;
 				break;
 			default:
-				fprintf(stderr, "Usage :\n"
-						"%s -k key [-f filename]"
-						"\n", __FILE__);
+				usage();
+
 		}
 
 	}
 
 	/* if we don't have the key then why continue */
-	if(!should_we_countinue) return 1;
+	if(!should_we_countinue){
+		printf("Enter the key kindly \n");
+		usage();
+	       	return 1;
+	}
 
 	obtain_plain_text();
 	transpose();
 	finalize();
 	return 0;
+}
+
+void usage(){
+	fprintf(stderr, "Usage :\n"
+			"%s -k key [-f filename]"
+			"\n", __FILE__);
 }
 
 int obtain_plain_text(){
