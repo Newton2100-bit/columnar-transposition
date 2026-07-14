@@ -92,24 +92,30 @@ void transpose(){
 	char *cipher_text = (char *)malloc(4096);
 
 	key_values  key_data[strlen(key)];
+	/* constructing the array from the key */
 	for(int i = 0; i < strlen(key); i++){
 		key_data[i].position = i + 1; /* i opted to go index 1 to avoid complications */
 		key_data[i].value = key[i];
 	}
-	printf("before sort..\n");
-	for(int i = 0; i < strlen(key); i++){
-		printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
-	}
-	printf("sort .......\n");
+	/* sort the array we created */
 	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
 
-	printf("after sort .......\n");
+	/* create the cipher now */
 	for(int i = 0; i < strlen(key); i++){
-		printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
+		for(){
+
+		}
 	}
 
 	free(cipher_text);
 }
+
+#if 0
+	/* printing the array */
+	 * for(int i = 0; i < strlen(key); i++){
+		printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
+	}
+#endif
 
 int cmp(const void *one,const void *two){
 	return (((key_values*)one)->value < ((key_values*)(two))->value)? -1 : (((key_values*)(one))->value == ((key_values*)(two))->value)? 0 : 1;
