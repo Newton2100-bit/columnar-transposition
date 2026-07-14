@@ -11,9 +11,7 @@
 int main(int argc, char *argv[]){
 	char *key = NULL;
 	char *filename;
-	char *target_data;;
-	int target_fd = -1;
-	int final_size;
+	char *target_data;
 	int argument;
 	bool should_we_countinue = false;
 	bool using_file = false;
@@ -44,18 +42,10 @@ int main(int argc, char *argv[]){
 		 * reading everything to a buffer 
 		 */
 		target_data = (char *)malloc(sizeof(char) * 4096 );
-		int offset = 0;
-		/* reading data from the stream */
-		while(true){
-			if(scanf("%[^'\n']", target_data + offset) == EOF)
-				break;
-			getchar();
-			offset = strlen(target_data);
-			target_data[offset] = '\n';
-			offset++;
-		}
-		printf("size of the data we did read is %d.\n", strlen(target_data));
-		printf("we read >>>>>>>>>>>>>>>%s<<<<<<<<<<<<<", target_data);
+		fread(target_data , 1, 4096, stdin);
+		/* just for debugging */
+		printf("SIZE :: %ld.\n", strlen(target_data));
+		printf("DATA::\n%s", target_data);
 	}else{
 		/* Things here will move away from stack and go to heap
 		 * for easier management and simplicity 
@@ -69,11 +59,13 @@ int main(int argc, char *argv[]){
 			perror("MMAP :: ");
 			return 1;
 		}
-		printf("SIZE :: %d.\n", strlen(target_data));
+
+		/* just for debugging */
+		printf("SIZE :: %ld.\n", strlen(target_data));
 		printf("DATA::\n%s", target_data);
 	}
 
-	char *cipher_text = (char *)malloc(final_size * sizeof(char));
+	char *cipher_text = (char *)malloc(4096);
 	free(cipher_text);
 	return 0;
 }
