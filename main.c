@@ -34,6 +34,7 @@ int main(int argc, char *argv[]){
 
 	}
 
+	/* if we don't have the key then why continue */
 	if(!should_we_countinue) return 1;
 
 	// printf("we abtained the key :: %s.\n", key);
@@ -43,9 +44,8 @@ int main(int argc, char *argv[]){
 		 */
 		target_data = (char *)malloc(sizeof(char) * 4096 );
 		fread(target_data , 1, 4096, stdin);
-		/* just for debugging */
-		printf("SIZE :: %ld.\n", strlen(target_data));
-		printf("DATA::\n%s", target_data);
+		/* if there is no data then we should exit */
+		if (strlen(target_data) < 1) return 1;
 	}else{
 		/* Things here will move away from stack and go to heap
 		 * for easier management and simplicity 
@@ -60,9 +60,6 @@ int main(int argc, char *argv[]){
 			return 1;
 		}
 
-		/* just for debugging */
-		printf("SIZE :: %ld.\n", strlen(target_data));
-		printf("DATA::\n%s", target_data);
 	}
 
 	char *cipher_text = (char *)malloc(4096);
