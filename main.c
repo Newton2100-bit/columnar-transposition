@@ -35,11 +35,13 @@ bool using_file = false;
 bool is_unmap = false;
 
 /* functions */
+void close_it(inc *ds);
+void print_result(inc *);
 int obtain_plain_text();
 void finalize();
 void transpose();
 int cmp(const void*,const void*);
-	
+
 int main(int argc, char *argv[]){
 
 	while((argument = getopt(argc, argv, ":k:f:")) != -1){
@@ -90,8 +92,8 @@ int obtain_plain_text(){
 			return 1;
 		}
 
-		 close(fd);
-		 is_unmap = true;
+		close(fd);
+		is_unmap = true;
 	}
 	return 0;
 }
@@ -115,11 +117,10 @@ void transpose(){
 
 	int add_ons = (TEXT_LEN % KEY_LEN)? 1 : 0;
 	int iterations =  temp + add_ons;
-	printf("ADD ONS turned out to be %d.\n", add_ons);
 
-	printf("on a data of %d len we found iter to be %d.\n", TEXT_LEN, iterations);
 	/* create the cipher now */
 	int count = 0;
+	inc result = {0};
 	for(int i = 0; i < KEY_LEN; i++){
 
 		int position = key_data[i].position;
@@ -127,21 +128,30 @@ void transpose(){
 
 		while(lcount <= iterations){
 			if(position > TEXT_LEN){
-				// cipher_text[count] = '+';
-				printf("%c ", '+');
+				push(&result, '+');
+				// printf("%c ", '+');
 				break;
 			}else{
-				// cipher_text[count] = target_data[position];
-				printf("%c ", target_data[position]);
+				push(&result,  target_data[position]);
+				//	printf("%c ", target_data[position]);
 			}
 			count++;
 			position += KEY_LEN;
 			lcount++;
 		}
 	}
-	// cipher_text[count+1] = '\0';
-	printf("\n DONE \n");
+	close_it(&result);
+	print_result(&result);
 
+}
+
+void print_result(inc *result){
+	for(int i = 0; i < result->count; i++)
+		printf("%c", result->array[i]);
+}
+
+void close_it(inc *ds){
+	ds->array[ds->count] = '\0';
 }
 
 void push(inc *ds, char value){
@@ -150,10 +160,10 @@ void push(inc *ds, char value){
 }
 
 #if 0
-	/* printing the array */
-	 * for(int i = 0; i < strlen(key); i++){
-		printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
-	}
+/* printing the array */
+* for(int i = 0; i < strlen(key); i++){
+	printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
+}
 #endif
 
 int cmp(const void *one,const void *two){
