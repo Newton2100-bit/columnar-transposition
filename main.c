@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <ctype.h>
+
+
+int main(int argc, char *argv[]){
+	char *key = NULL;
+	char *filename;
+	char *target_data;
+	int argument;
+	bool should_we_countinue = false;
+	bool using_file = false;
+
+	while((argument = getopt(argc, argv, ":k:f:")) != -1){
+		switch(argument){
+			case 'k':
+				key = optarg;
+				should_we_countinue = true;
+				break;
+			case 'f':
+				filename = optarg;
+				using_file = true;
+				break;
+			default:
+				fprintf(stderr, "Usage :\n"
+						"%s -k key [-f filename]"
+						"\n", __FILE__);
+		}
+
+	}
+
+	if(!should_we_countinue) return 1;
+
+	// printf("we abtained the key :: %s.\n", key);
+	if(!using_file){
+		/* Here things are going on an array of characters
+		 * reading everything to a buffer 
+		 */
+		target_data = (char *)malloc(sizeof(char) * 4096 );
+		fread(target_data , 1, 4096, stdin);
+		/* just for debugging */
+		printf("SIZE :: %ld.\n", strlen(target_data));
+		printf("DATA::\n%s", target_data);
+	}else{
+		/* Things here will move away from stack and go to heap
+		 * for easier management and simplicity 
+		 */
+		int fd = open(filename, O_RDONLY);
+		struct stat file_size;
+		fstat(fd, &file_size);
+
+		target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+		if(target_data == MAP_FAILED){
+			perror("MMAP :: ");
+			return 1;
+		}
+
+		/* just for debugging */
+		printf("SIZE :: %ld.\n", strlen(target_data));
+		printf("DATA::\n%s", target_data);
+	}
+
+	char *cipher_text = (char *)malloc(4096);
+	free(cipher_text);
+	return 0;
+}
