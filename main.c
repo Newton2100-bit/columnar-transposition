@@ -18,7 +18,7 @@ bool using_file = false;
 bool is_unmap = false;
 
 /* functions */
-void obtain_plain_text();
+int obtain_plain_text();
 void finalize();
 void transpose();
 
@@ -46,12 +46,12 @@ int main(int argc, char *argv[]){
 	if(!should_we_countinue) return 1;
 
 	obtain_plain_text();
-	transponse();
+	transpose();
 	finalize();
 	return 0;
 }
 
-void obtain_plain_text(){
+int obtain_plain_text(){
 	// printf("we abtained the key :: %s.\n", key);
 	if(!using_file){
 		/* Here things are going on an array of characters
@@ -59,8 +59,6 @@ void obtain_plain_text(){
 		 */
 		target_data = (char *)malloc(sizeof(char) * 4096 );
 		fread(target_data , 1, 4096, stdin);
-		/* if there is no data then we should exit */
-		if (strlen(target_data) < 1) return 1;
 	}else{
 		/* Things here will move away from stack and go to heap
 		 * for easier management and simplicity 
@@ -76,6 +74,7 @@ void obtain_plain_text(){
 
 		close(fd);
 	}
+	return 0;
 }
 
 void transpose(){
