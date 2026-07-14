@@ -85,6 +85,10 @@ int obtain_plain_text(){
 		 * for easier management and simplicity 
 		 */
 		int fd = open(filename, O_RDONLY);
+		if(fd  < 0){
+			perror("OPEN:: ");
+			exit(1);
+		}
 		fstat(fd, &file_size);
 
 		target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
@@ -109,10 +113,10 @@ void transpose(){
 	/* sort the array we created */
 	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
 
-	int TEXT_LEN = strlen(target_data) - 1;
+	int TEXT_LEN = strlen(target_data) ;
 	int KEY_LEN = strlen(key);
-	printf("TEXT LEN : %d\n", TEXT_LEN);
-	printf("KEY LEN : %d\n", KEY_LEN);
+	//	printf("TEXT LEN : %d\n", TEXT_LEN);
+	//	printf("KEY LEN : %d\n", KEY_LEN);
 	int temp =  TEXT_LEN / KEY_LEN;
 
 
@@ -141,7 +145,7 @@ void transpose(){
 			lcount++;
 		}
 	}
-	close_it(&result);
+	// 	close_it(&result);/* adding a null which is already there */
 	print_result(&result);
 
 }
@@ -149,9 +153,16 @@ void transpose(){
 void print_result(inc *result){
 	for(int i = 0; i < result->count; i++)
 		printf("%c", result->array[i]);
+	/* just for readability and hence when we are writting to a file we should not execute this statement */
+	if(isatty(fileno(stdout)))
+		printf("\n");
 }
 
 void close_it(inc *ds){
+	/*Note that this is optional since 
+	 * we intialized the whole array with nulls 
+	 * just being over explicit
+	 */
 	ds->array[ds->count] = '\0';
 }
 
