@@ -101,11 +101,23 @@ void transpose(){
 	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
 
 	/* create the cipher now */
+	int position = 0;
 	for(int i = 0; i < strlen(key); i++){
-		for(){
+		int mod = strlen(target_data) % strlen(key);
+		int inter = strlen(target_data) / strlen(key); 
+		int expected_times = inter  + (mod)? 1: 0;
 
+		for(int j = 0; j < expected_times; j + strlen(key)){
+			/*
+			if(j > inter)
+				cipher_text[position] = '`';
+			else
+				cipher_text[position] = target_data[j];
+			position++;
+			*/
 		}
 	}
+	printf("CIPHER::::\n%s", cipher_text);
 
 	free(cipher_text);
 }
