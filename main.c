@@ -15,6 +15,15 @@ typedef struct key_values{
 }key_values;
 
 
+typedef struct inc{
+	int count;
+	char array[4096];
+}inc;
+
+void push(inc*, char);
+
+
+
 /* variables */
 char *key = NULL;
 char *filename;
@@ -26,11 +35,13 @@ bool using_file = false;
 bool is_unmap = false;
 
 /* functions */
+void close_it(inc *ds);
+void print_result(inc *);
 int obtain_plain_text();
 void finalize();
 void transpose();
 int cmp(const void*,const void*);
-	
+
 int main(int argc, char *argv[]){
 
 	int argument;
@@ -82,52 +93,78 @@ int obtain_plain_text(){
 			return 1;
 		}
 
-		 close(fd);
-		 is_unmap = true;
+		close(fd);
+		is_unmap = true;
 	}
 	return 0;
 }
 
 void transpose(){
-/* the whole logic */
-	char *cipher_text = (char *)malloc(4096);
-
 	key_values  key_data[strlen(key)];
 	/* constructing the array from the key */
 	for(int i = 0; i < strlen(key); i++){
-		key_data[i].position = i + 1; /* i opted to go index 1 to avoid complications */
+		key_data[i].position = i;
 		key_data[i].value = key[i];
 	}
 	/* sort the array we created */
 	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
 
-	/* create the cipher now */
-	int position = 0;
-	for(int i = 0; i < strlen(key); i++){
-		int mod = strlen(target_data) % strlen(key);
-		int inter = strlen(target_data) / strlen(key); 
-		int expected_times = inter  + (mod)? 1: 0;
+	int TEXT_LEN = strlen(target_data) - 1;
+	int KEY_LEN = strlen(key);
+	printf("TEXT LEN : %d\n", TEXT_LEN);
+	printf("KEY LEN : %d\n", KEY_LEN);
+	int temp =  TEXT_LEN / KEY_LEN;
 
-		for(int j = 0; j < expected_times; j + strlen(key)){
-			/*
-			if(j > inter)
-				cipher_text[position] = '`';
-			else
-				cipher_text[position] = target_data[j];
-			position++;
-			*/
+
+	int add_ons = (TEXT_LEN % KEY_LEN)? 1 : 0;
+	int iterations =  temp + add_ons;
+
+	/* create the cipher now */
+	int count = 0;
+	inc result = {0};
+	for(int i = 0; i < KEY_LEN; i++){
+
+		int position = key_data[i].position;
+		int lcount =  0;
+
+		while(lcount <= iterations){
+			if(position > TEXT_LEN){
+				push(&result, '+');
+				// printf("%c ", '+');
+				break;
+			}else{
+				push(&result,  target_data[position]);
+				//	printf("%c ", target_data[position]);
+			}
+			count++;
+			position += KEY_LEN;
+			lcount++;
 		}
 	}
-	printf("CIPHER::::\n%s", cipher_text);
+	close_it(&result);
+	print_result(&result);
 
-	free(cipher_text);
+}
+
+void print_result(inc *result){
+	for(int i = 0; i < result->count; i++)
+		printf("%c", result->array[i]);
+}
+
+void close_it(inc *ds){
+	ds->array[ds->count] = '\0';
+}
+
+void push(inc *ds, char value){
+	ds->array[ds->count] = value;
+	ds->count++;
 }
 
 #if 0
-	/* printing the array */
-	 * for(int i = 0; i < strlen(key); i++){
-		printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
-	}
+/* printing the array */
+* for(int i = 0; i < strlen(key); i++){
+	printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
+}
 #endif
 
 int cmp(const void *one,const void *two){
