@@ -1,3 +1,4 @@
+/* vim: set linenumber */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -6,6 +7,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
+
+/* data to hold metadata of the keys */
+typedef struct key_values{
+	char value;
+	int position;
+}key_values;
+
 
 /* variables */
 char *key = NULL;
@@ -21,7 +29,8 @@ bool is_unmap = false;
 int obtain_plain_text();
 void finalize();
 void transpose();
-
+int cmp(const void*,const void*);
+	
 int main(int argc, char *argv[]){
 
 	while((argument = getopt(argc, argv, ":k:f:")) != -1){
@@ -72,7 +81,8 @@ int obtain_plain_text(){
 			return 1;
 		}
 
-		close(fd);
+		 close(fd);
+		 is_unmap = true;
 	}
 	return 0;
 }
@@ -81,9 +91,31 @@ void transpose(){
 /* the whole logic */
 	char *cipher_text = (char *)malloc(4096);
 
-	free(cipher_text);
+	key_values  key_data[strlen(key)];
+	for(int i = 0; i < strlen(key); i++){
+		key_data[i].position = i + 1; /* i opted to go index 1 to avoid complications */
+		key_data[i].value = key[i];
+	}
+	printf("before sort..\n");
+	for(int i = 0; i < strlen(key); i++){
+		printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
+	}
+	printf("sort .......\n");
+	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
 
+	printf("after sort .......\n");
+	for(int i = 0; i < strlen(key); i++){
+		printf("[%d] %c => %d\n", i,key_data[i].value, key_data[i].position);
+	}
+
+	free(cipher_text);
 }
+
+int cmp(const void *one,const void *two){
+	return (((key_values*)one)->value < ((key_values*)(two))->value)? -1 : (((key_values*)(one))->value == ((key_values*)(two))->value)? 0 : 1;
+}
+
+
 void finalize(){
 	if(is_unmap)
 		munmap(target_data, file_size.st_size);
