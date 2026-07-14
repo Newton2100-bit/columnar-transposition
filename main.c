@@ -12,10 +12,11 @@ int main(int argc, char *argv[]){
 	char *key = NULL;
 	char *filename;
 	char *target_data;
-	int argument;
+	/* below are flags to make error handling easy */
 	bool should_we_countinue = false;
 	bool using_file = false;
 
+	int argument;
 	while((argument = getopt(argc, argv, ":k:f:")) != -1){
 		switch(argument){
 			case 'k':
