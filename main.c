@@ -1,12 +1,12 @@
 /* vim: set linenumber */
+#include <ctype.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/mman.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <ctype.h>
 
 /* data to hold metadata of the keys */
 typedef struct key_values{
@@ -25,27 +25,28 @@ void push(inc*, char);
 
 
 /* variables */
-char *key = NULL;
-char *filename;
-struct stat file_size;
-char *target_data;
-int argument;
+bool is_unmap = false;
 bool should_we_countinue = false;
 bool using_file = false;
-bool is_unmap = false;
+char *filename;
+char *file_output = NULL;
+char *key = NULL;
+char *target_data;
+int argument;
+struct stat file_size;
 
 /* functions */
-void close_it(inc *ds);
-void print_result(inc *);
-int obtain_plain_text();
-void finalize();
-void transpose();
 int cmp(const void*,const void*);
+int obtain_plain_text();
+void close_it(inc *ds);
+void finalize();
+void print_result(inc *);
+void transpose();
 
 int main(int argc, char *argv[]){
 
 	int argument;
-	while((argument = getopt(argc, argv, ":k:f:")) != -1){
+	while((argument = getopt(argc, argv, ":k:f:o:")) != -1){
 		switch(argument){
 			case 'k':
 				key = optarg;
@@ -54,6 +55,9 @@ int main(int argc, char *argv[]){
 			case 'f':
 				filename = optarg;
 				using_file = true;
+				break;
+			case 'o':
+				file_output = optarg;
 				break;
 			default:
 				fprintf(stderr, "Usage :\n"
@@ -151,11 +155,25 @@ void transpose(){
 }
 
 void print_result(inc *result){
-	for(int i = 0; i < result->count; i++)
-		printf("%c", result->array[i]);
+	if(file_output == NULL){
+		for(int i = 0; i < result->count; i++)
+			printf("%c", result->array[i]);
+
+		printf("\n");
+	}else{
+		FILE *dst = fopen(file_output, "w+");
+		fwrite(result->array,strlen(result->array),1, dst);
+		fprintf(dst, "\n");
+		fclose(dst);
+		fprintf(stderr, "wrote to file %s successfully\n", file_output);
+	}
+
+
+#if 0
 	/* just for readability and hence when we are writting to a file we should not execute this statement */
 	if(isatty(fileno(stdout)))
 		printf("\n");
+#endif
 }
 
 void close_it(inc *ds){

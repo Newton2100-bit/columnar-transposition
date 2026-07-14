@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 int main(){
-	int fd = open(__FILE__, O_RDONLY);
+	int fd = open("main.c", O_RDONLY);
 	struct stat this;
 	fstat(fd, &this);
 	char *file = mmap(NULL, this.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
