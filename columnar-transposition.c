@@ -8,6 +8,15 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+/* some macros */
+
+#define ERROR(message) do{ \
+	fprintf(stderr, "%s", "\x1b[38;5;198m");\
+	perror(message);\
+	fprintf(stderr, "%s", "\x1b[0m");\
+	exit(1);\
+}while(0)
+
 /* data to hold metadata of the keys */
 typedef struct key_values{
 	char value;
@@ -35,14 +44,14 @@ struct stat file_size;
 
 /* functions */
 int cmp(const void*,const void*);
-int obtain_plain_text();
-int read_from_file();
-int read_from_stdin();
 void create_cipher(key_values *key_data);
 void finalize();
 void handle_output(cipher_house *);
+void obtain_plain_text();
 void parse_arguments(int argc, char *argv[]);
 void push_character(cipher_house*, char);
+void read_from_file();
+void read_from_stdin();
 void terminate_the_string(cipher_house *ds);
 void transpose();
 void usage();
@@ -53,14 +62,11 @@ int main(int argc, char *argv[]){
 
 	/* if we don't have the key then why continue */
 	if(!should_we_countinue){
-		printf("Enter the key kindly \n");
 		usage();
 		return 1;
 	}
 
-	if(obtain_plain_text() != 0)
-		return 1;
-
+	obtain_plain_text();
 	transpose();
 	finalize();
 	return 0;
@@ -87,52 +93,35 @@ void parse_arguments(int argc, char *argv[]){
 	}
 }
 
-void usage(){
-	fprintf(stderr, "Usage :\n"
-			"%s -k key [-f filename]"
-			"\n", __FILE__);
+inline void usage(){
+	fprintf(stderr, "Usage :\n%s -k key [-f filename]\n"
+			, __FILE__);
 }
 
-int obtain_plain_text(){
-	if(!using_file){
-		/* Here things are going on an array of characters
-		 * reading everything to a buffer 
-		 */
-		if(read_from_stdin() != 0)
-			return 1;
-	}else{
-		/* Things here will move away from stack and go to heap
-		 * for easier management and simplicity 
-		 */
-		if(read_from_file() != 0)
-			return 1;
-	}
-	return 0; /* This indicates that we did acquaire data succesfully */
+void obtain_plain_text(){
+	if(!using_file)
+		read_from_stdin();
+	else
+		read_from_file();
 }
 
-int read_from_stdin(){
+void read_from_stdin(){
 	target_data = (char *)malloc(sizeof(char) * 4096 );
 	fread(target_data , 1, 4096, stdin);
-	return 0;
 }
 
-int  read_from_file(){
+void  read_from_file(){
 	int fd = open(filename, O_RDONLY);
-	if(fd  < 0){
-		perror("OPEN:: ");
-		exit(1);
-	}
+	if(fd  < 0)
+		ERROR("OPEN:: ");
 
 	fstat(fd, &file_size);
 	target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if(target_data == MAP_FAILED){
-		perror("MMAP :: ");
-		return 1;
-	}
+	if(target_data == MAP_FAILED)
+		ERROR("MMAP :: ");
 
 	close(fd);
 	is_unmap = true;
-	return 0;
 }
 
 void create_cipher(key_values *key_data){
@@ -158,6 +147,11 @@ void create_cipher(key_values *key_data){
 		}
 	}
 	handle_output(&cipher);
+}
+
+void push_character(cipher_house *ds, char value){
+	ds->array[ds->count] = value;
+	ds->count++;
 }
 
 void transpose(){
@@ -200,10 +194,6 @@ void terminate_the_string(cipher_house *ds){
 	ds->array[ds->count] = '\0';
 }
 
-void push_character(cipher_house *ds, char value){
-	ds->array[ds->count] = value;
-	ds->count++;
-}
 
 #if 0
 /* printing the array */
