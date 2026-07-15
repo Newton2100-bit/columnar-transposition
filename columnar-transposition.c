@@ -17,18 +17,15 @@
 }while(0)
 
 /* data to hold metadata of the keys */
-typedef struct key_values{
+typedef struct{
 	char value;
 	int position;
 }key_values;
 
-typedef struct cipher_house{
+typedef struct{
 	int count;
 	char array[4096];
 }cipher_house;
-
-
-
 
 /* variables */
 bool is_unmap = false;
@@ -46,11 +43,11 @@ int cmp(const void*,const void*);
 void create_cipher(key_values *key_data);
 void finalize();
 void handle_output(cipher_house *);
-void obtain_plain_text();
+void obtain_text_and_process();
 void parse_arguments(int argc, char *argv[]);
 void push_character(cipher_house*, char);
-void read_from_file();
-void read_from_stdin();
+void read_from_file_and_process();
+void read_from_stdin_and_process();
 void terminate_the_string(cipher_house *ds);
 void transpose();
 void usage();
@@ -65,8 +62,8 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 
-	obtain_plain_text();
-	transpose();
+	obtain_text_and_process();
+//	transpose();
 	finalize();
 	return 0;
 }
@@ -93,26 +90,42 @@ void parse_arguments(int argc, char *argv[]){
 }
 
 inline void usage(){
-	static short value = 0;
+	static short  value = 0;
 	if(value > 0) return;
 	fprintf(stderr, "Usage :\n\t%s -k key [-f filename] [-o output]\n"
 			, __FILE__);
 	value++;
 }
 
-void obtain_plain_text(){
+void obtain_text_and_process(){
 	if(!using_file)
-		read_from_stdin();
+		read_from_stdin_and_process();
 	else
-		read_from_file();
+		read_from_file_and_process();
 }
 
-void read_from_stdin(){
+void transpose(){
+	/* The struct below holds two things 
+	 * the key value and it's position in sequence 
+	 * which we later sort so as to implement the alg
+	 */
+	key_values  key_data[strlen(key)];
+	for(int i = 0; i < (int)strlen(key); i++){
+		key_data[i].position = i;
+		key_data[i].value = key[i];
+	}
+
+	/* sort the array we created */
+	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
+	create_cipher(&key_data[0]);
+}
+
+void read_from_stdin_and_process(){
 	target_data = (char *)malloc(sizeof(char) * 4096 );
 	fread(target_data , 1, 4096, stdin);
 }
 
-void  read_from_file(){
+void  read_from_file_and_process(){
 	int fd = open(filename, O_RDONLY);
 	if(fd  < 0)
 		ERROR("OPEN:");
@@ -161,21 +174,6 @@ void push_character(cipher_house *ds, char value){
 	ds->count++;
 }
 
-void transpose(){
-	/* The struct below holds two things 
-	 * the key value and it's position in sequence 
-	 * which we later sort so as to implement the alg
-	 */
-	key_values  key_data[strlen(key)];
-	for(int i = 0; i < (int)strlen(key); i++){
-		key_data[i].position = i;
-		key_data[i].value = key[i];
-	}
-
-	/* sort the array we created */
-	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
-	create_cipher(&key_data[0]);
-}
 
 void handle_output(cipher_house *cipher){
 	/* alot will happen in this function  soon */
@@ -201,7 +199,6 @@ inline void terminate_the_string(cipher_house *ds){
 	ds->array[ds->count] = '\0';
 }
 
-
 #if 0
 /* printing the array */
 for(int i = 0; i < strlen(key); i++){
@@ -214,7 +211,6 @@ int cmp(const void *one,const void *two){
 		(((key_values*)(one))->value == ((key_values*)(two))->value)? 0 :
 		1;
 }
-
 
 void finalize(){
 	if(is_unmap)
