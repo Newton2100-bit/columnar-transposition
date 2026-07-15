@@ -19,7 +19,6 @@ typedef struct cipher_house{
 	char array[4096];
 }cipher_house;
 
-void push_character(cipher_house*, char);
 
 
 
@@ -27,9 +26,9 @@ void push_character(cipher_house*, char);
 bool is_unmap = false;
 bool should_we_countinue = false;
 bool using_file = false;
-char *key = NULL;
 char *filename;
 char *file_output = NULL;
+char *key = NULL;
 char *target_data;
 int argument;
 struct stat file_size;
@@ -38,14 +37,34 @@ struct stat file_size;
 int cmp(const void*,const void*);
 int obtain_plain_text();
 int read_from_file();
-void create_cipher(key_values *key_data);
 int read_from_stdin();
-void terminate_the_string(cipher_house *ds);
+void create_cipher(key_values *key_data);
 void finalize();
-void parse_arguments(int argc, char *argv[]);
 void handle_output(cipher_house *);
+void parse_arguments(int argc, char *argv[]);
+void push_character(cipher_house*, char);
+void terminate_the_string(cipher_house *ds);
 void transpose();
-void usage(void);
+void usage();
+
+int main(int argc, char *argv[]){
+	/* parse our arguments */
+	parse_arguments(argc, argv);
+
+	/* if we don't have the key then why continue */
+	if(!should_we_countinue){
+		printf("Enter the key kindly \n");
+		usage();
+		return 1;
+	}
+
+	if(obtain_plain_text() != 0)
+		return 1;
+
+	transpose();
+	finalize();
+	return 0;
+}
 
 void parse_arguments(int argc, char *argv[]){
 	int argument;
@@ -68,53 +87,10 @@ void parse_arguments(int argc, char *argv[]){
 	}
 }
 
-int main(int argc, char *argv[]){
-	/* parse our arguments */
-	parse_arguments(argc, argv);
-
-	/* if we don't have the key then why continue */
-	if(!should_we_countinue){
-		printf("Enter the key kindly \n");
-		usage();
-		return 1;
-	}
-
-	if(obtain_plain_text() != 0)
-		return 1;
-
-	transpose();
-	finalize();
-	return 0;
-}
-
 void usage(){
 	fprintf(stderr, "Usage :\n"
 			"%s -k key [-f filename]"
 			"\n", __FILE__);
-}
-int read_from_stdin(){
-	target_data = (char *)malloc(sizeof(char) * 4096 );
-	fread(target_data , 1, 4096, stdin);
-	return 0;
-}
-
-int  read_from_file(){
-	int fd = open(filename, O_RDONLY);
-	if(fd  < 0){
-		perror("OPEN:: ");
-		exit(1);
-	}
-	fstat(fd, &file_size);
-
-	target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if(target_data == MAP_FAILED){
-		perror("MMAP :: ");
-		return 1;
-	}
-
-	close(fd);
-	is_unmap = true;
-	return 0;
 }
 
 int obtain_plain_text(){
@@ -134,6 +110,31 @@ int obtain_plain_text(){
 	return 0; /* This indicates that we did acquaire data succesfully */
 }
 
+int read_from_stdin(){
+	target_data = (char *)malloc(sizeof(char) * 4096 );
+	fread(target_data , 1, 4096, stdin);
+	return 0;
+}
+
+int  read_from_file(){
+	int fd = open(filename, O_RDONLY);
+	if(fd  < 0){
+		perror("OPEN:: ");
+		exit(1);
+	}
+
+	fstat(fd, &file_size);
+	target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	if(target_data == MAP_FAILED){
+		perror("MMAP :: ");
+		return 1;
+	}
+
+	close(fd);
+	is_unmap = true;
+	return 0;
+}
+
 void create_cipher(key_values *key_data){
 	int TEXT_LEN = strlen(target_data) ;
 	int KEY_LEN = strlen(key);
@@ -142,7 +143,6 @@ void create_cipher(key_values *key_data){
 	/* create the cipher now */
 	cipher_house cipher = {0};
 	for(int i = 0; i < KEY_LEN; i++){
-	//	int position = ((key_values*)(key_data[i]))->position;
 		int position = key_data[i].position;
 		int lcount =  0;
 
@@ -177,6 +177,7 @@ void transpose(){
 }
 
 void handle_output(cipher_house *cipher){
+	/* alot will happen in this function  soon */
 	if(file_output == NULL){
 		for(int i = 0; i < cipher->count; i++)
 			printf("%c", cipher->array[i]);
