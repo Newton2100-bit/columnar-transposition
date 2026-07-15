@@ -63,7 +63,6 @@ int main(int argc, char *argv[]){
 	}
 
 	obtain_text_and_process();
-//	transpose();
 	finalize();
 	return 0;
 }
@@ -105,10 +104,6 @@ void obtain_text_and_process(){
 }
 
 void transpose(){
-	/* The struct below holds two things 
-	 * the key value and it's position in sequence 
-	 * which we later sort so as to implement the alg
-	 */
 	key_values  key_data[strlen(key)];
 	for(int i = 0; i < (int)strlen(key); i++){
 		key_data[i].position = i;
@@ -117,12 +112,16 @@ void transpose(){
 
 	/* sort the array we created */
 	qsort(&key_data, strlen(key), sizeof(key_values), cmp);
-	create_cipher(&key_data[0]);
+	create_cipher(key_data);
 }
 
 void read_from_stdin_and_process(){
-	target_data = (char *)malloc(sizeof(char) * 4096 );
-	fread(target_data , 1, 4096, stdin);
+	target_data = (char *)malloc(sizeof(key) * 4096 );
+	fread(target_data , 1, sizeof(key) * 4096, stdin);
+	transpose();
+	
+	if(feof(stdin)){}
+		//  handle_output();
 }
 
 void  read_from_file_and_process(){
@@ -132,11 +131,14 @@ void  read_from_file_and_process(){
 
 	fstat(fd, &file_size);
 	target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+
 	if(target_data == MAP_FAILED)
 		ERROR("MMAP :");
+	else
+		transpose();
 
-	close(fd);
 	is_unmap = true;
+	close(fd);
 }
 
 void create_cipher(key_values *key_data){
@@ -144,50 +146,56 @@ void create_cipher(key_values *key_data){
 	int KEY_LEN = strlen(key);
 	int iterations =  (TEXT_LEN / KEY_LEN) + ((TEXT_LEN % KEY_LEN)? 1 : 0);
 
-	/* create the cipher now */
-	cipher_house cipher = {0};
-	memset(cipher.array, '\0', 4096);
-
+	/* create the cipher per key */
+	 cipher_house *cipher = (cipher_house*)calloc(KEY_LEN, sizeof(cipher_house));
+	
 	for(int i = 0; i < KEY_LEN; i++){
-		int position = key_data[i].position;
+		int position = key_data[i].position;/* which key are we processing */
 		int lcount =  0;
 
 		while(lcount <= iterations){
 			if(position > TEXT_LEN){
-				push_character(&cipher, '+');
+				push_character(&cipher[i], '+');
 				break;
 			}else
-				push_character(&cipher,  target_data[position]);
+				push_character(&cipher[i],  target_data[position]);
 
 			position += KEY_LEN;
 			lcount++;
 		}
 	}
-	handle_output(&cipher);
+
+	handle_output(cipher);
+	free(cipher);
 }
 
 void push_character(cipher_house *ds, char value){
 	/* incase of any bugs they might be from here high chances are
 	 * */
-	 strncat(ds->array, &value, 1);
-	//ds->array[ds->count] = value;
+	//  strncat(ds->array, &value, 1);
+	ds->array[ds->count] = value;
 	ds->count++;
+
+	if(ds->count  == 4095)
+		ERROR("VERY LARGE FILE TO PROCESS");
 }
 
 
 void handle_output(cipher_house *cipher){
 	/* alot will happen in this function  soon */
 	if(file_output == NULL){
-		for(int i = 0; i < cipher->count; i++)
-			printf("%c", cipher->array[i]);
+		for(int j = 0; j < (int)strlen(key); j++)
+			printf("%s", cipher[j].array);
 
 		printf("\n");
 	}else{
 		FILE *dst = fopen(file_output, "w+");
-		fwrite(cipher->array,strlen(cipher->array),1, dst);
+
+		for(int i = 0; i < (int)strlen(key); i++)
+			fwrite(cipher[i].array, strlen(cipher[i].array), 1, dst);
+		
 		fprintf(dst, "\n");
 		fclose(dst);
-		fprintf(stderr, "wrote to file %s successfully\n", file_output);
 	}
 }
 
