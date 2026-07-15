@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -e
+
+key='CAT'
+filename='test/test-file.txt'
+output=${filename/%.*/.cipher}
+
+while getopts ':f:o:k:' opt; do
+	case ${opt} in
+		f) filename=${OPTARG}
+			output=${filename/%.*/.cipher}
+			;;
+		o) output=${OPTARG} ;;
+		k) key=${OPTARG} ;;
+		*) : ;;
+	esac
+done
+
+# debug(){
+# 	echo "File name is $filename"
+# 	echo "key is $key"
+# 	echo "output file is $output"
+# }
+
+# debug
+
+a.out -k ${key} -f ${filename} -o ${output}
+cat ${output} # &>/dev/null
