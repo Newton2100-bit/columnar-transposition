@@ -22,12 +22,4 @@ space all over.
 - -f file(file name holding the plain text default is stdin)
 
 # LIMITATION
-- Cannot hande more than 4096 bytes from a file but if it is is stdin it
-  will truncate
-
-## WHY 4096
-- since i explictly asked for that in the very begining from the memory
-  manager.
-
-(will be handled on version 1.2 release)
-(newton irungu)
+- it will handle 4096 * lenght of key input size
