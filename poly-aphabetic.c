@@ -88,6 +88,7 @@ void cipher_text(){
 	short offset = 0;
 	char cipher;
 	int temp;
+	/* source of all head ache */
 	for(int i = 0; i < (int)strlen(input_plain); i++){
 		offset = key_array[i % KEY_LEN].value;
 		if(isalpha(input_plain[i])){
