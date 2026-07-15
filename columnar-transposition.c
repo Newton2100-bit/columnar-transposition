@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 /* some macros */
-
 #define ERROR(message) do{ \
 	fprintf(stderr, "%s", "\x1b[38;5;198m");\
 	perror(message);\
@@ -94,8 +93,11 @@ void parse_arguments(int argc, char *argv[]){
 }
 
 inline void usage(){
-	fprintf(stderr, "Usage :\n%s -k key [-f filename]\n"
+	static short value = 0;
+	if(value > 0) return;
+	fprintf(stderr, "Usage :\n\t%s -k key [-f filename] [-o output]\n"
 			, __FILE__);
+	value++;
 }
 
 void obtain_plain_text(){
@@ -113,12 +115,12 @@ void read_from_stdin(){
 void  read_from_file(){
 	int fd = open(filename, O_RDONLY);
 	if(fd  < 0)
-		ERROR("OPEN:: ");
+		ERROR("OPEN:");
 
 	fstat(fd, &file_size);
 	target_data = mmap(NULL, file_size.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if(target_data == MAP_FAILED)
-		ERROR("MMAP :: ");
+		ERROR("MMAP :");
 
 	close(fd);
 	is_unmap = true;
@@ -131,6 +133,8 @@ void create_cipher(key_values *key_data){
 
 	/* create the cipher now */
 	cipher_house cipher = {0};
+	memset(cipher.array, '\0', 4096);
+
 	for(int i = 0; i < KEY_LEN; i++){
 		int position = key_data[i].position;
 		int lcount =  0;
@@ -150,7 +154,10 @@ void create_cipher(key_values *key_data){
 }
 
 void push_character(cipher_house *ds, char value){
-	ds->array[ds->count] = value;
+	/* incase of any bugs they might be from here high chances are
+	 * */
+	 strncat(ds->array, &value, 1);
+	//ds->array[ds->count] = value;
 	ds->count++;
 }
 
@@ -186,7 +193,7 @@ void handle_output(cipher_house *cipher){
 	}
 }
 
-void terminate_the_string(cipher_house *ds){
+inline void terminate_the_string(cipher_house *ds){
 	/*Note that this is optional since 
 	 * we intialized the whole array with nulls 
 	 * just being over explicit
