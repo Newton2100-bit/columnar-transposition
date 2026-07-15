@@ -62,6 +62,8 @@ void obtain_plaintext(){
 	}else{
 		/* we will read from the stdin stream */
 		input_plain = (char*)malloc(sizeof(char) * 12289);
+		if(input_plain == NULL)
+			ERROR("1. MALLOC");
 		/* a very naive approach !!!!!! */
 		fread(input_plain,sizeof(char), sizeof(input_plain), stdin);
 	}
