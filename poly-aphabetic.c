@@ -59,6 +59,7 @@ void obtain_plaintext(){
 
 	}else{
 		/* we will read from the stdin stream */
+
 	}
 }
 
@@ -70,7 +71,7 @@ void cipher_text(){
 		key_array[i].value = ((int)key[i]) - 48;;
 	}
 
-	output_cipher = calloc(1, sizeof(input_plain) + 1);
+	output_cipher = calloc(1, sizeof(input_plain));
 	memset(output_cipher,0, sizeof(output_cipher));
 
 	if(output_cipher == NULL)
@@ -78,24 +79,21 @@ void cipher_text(){
 
 	short offset = 0;
 	char cipher;
+	int temp;
 	for(int i = 0; i < (int)strlen(input_plain) - 1; i++){
 		offset = key_array[i % KEY_LEN].value;
-		printf("Offset is %d\n", offset);
 		if(isalpha(input_plain[i])){
 			if(isupper(input_plain[i])){
-				cipher = (char)('A' + ((input_plain[i] + offset) % 27));
+				temp = (((input_plain[i] - 65) + offset) % 26);
+				cipher = (char)(65 + temp);
 				output_cipher[i] = cipher;
-				printf("[%c]", cipher);
 			}else{
-
-				cipher = (char)('a' + ((input_plain[i] + offset) % 27));
+				temp = ((input_plain[i] - 97) + offset) % 26;
+				cipher = (char)(97 + temp); 
 				output_cipher[i] = cipher;
-				printf("[%c]", cipher);
 			}
-		}else{
+		}else
 			output_cipher[i] = input_plain[i];
-			printf("[%c]", output_cipher[i]);
-		}
 	}
 	handle_output();
 	free(output_cipher);
@@ -103,7 +101,7 @@ void cipher_text(){
 }
 
 void handle_output(){
-	printf("OUTPUT::\n %s\n", output_cipher);
+	printf("%s\n", output_cipher);
 }
 
 void usage(void){
