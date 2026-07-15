@@ -22,13 +22,12 @@ space all over.
 - -f file(file name holding the plain text default is stdin)
 
 # LIMITATION
-- can only stomach 4096 bytes for 64 bit machine 
-haven't tried on a 32 bit machine
-- When you exceed this limit the program with smash the stack and crash
-  or rather abort execution
+- Cannot hande more than 4096 bytes from a file but if it is is stdin it
+  will truncate
+
 ## WHY 4096
-- Since it is the page size of 64 bit machines and mmap works with
-  factors of pagesize (_SC_PAGESIZE)
+- since i explictly asked for that in the very begining from the memory
+  manager.
 
 (will be handled on version 1.2 release)
 (newton irungu)
