@@ -25,6 +25,7 @@ void obtain_plaintext();
 /* Variables */
 char *filename =  NULL;
 char *input_plain = NULL;
+bool should_we_unmap = false;
 char *output_cipher = NULL;
 char *key = NULL;
 
@@ -56,10 +57,13 @@ void obtain_plaintext(){
 			ERROR("MMAP");
 
 		close(fd);
+		should_we_unmap = true;
 
 	}else{
 		/* we will read from the stdin stream */
-
+		input_plain = (char*)malloc(sizeof(char) * 12289);
+		/* a very naive approach !!!!!! */
+		fread(input_plain,sizeof(char), sizeof(input_plain), stdin);
 	}
 }
 
@@ -97,7 +101,10 @@ void cipher_text(){
 	}
 	handle_output();
 	free(output_cipher);
-	munmap(input_plain, sizeof(input_plain));
+
+	if(should_we_unmap)
+		munmap(input_plain, sizeof(input_plain));
+	else free(input_plain);
 }
 
 void handle_output(){
