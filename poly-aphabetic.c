@@ -55,6 +55,7 @@ void obtain_plaintext(){
 		input_plain = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 		if(input_plain == MAP_FAILED)
 			ERROR("MMAP");
+		fprintf(stderr, "The size of mmap is %ld.\n", strlen(input_plain));
 
 		close(fd);
 		should_we_unmap = true;
@@ -77,16 +78,17 @@ void cipher_text(){
 		key_array[i].value = ((int)key[i]) - 48;;
 	}
 
-	output_cipher = calloc(1, sizeof(input_plain));
-	memset(output_cipher,0, sizeof(output_cipher));
+	output_cipher = malloc(strlen(input_plain) + 1);
+	memset(output_cipher,0, strlen(input_plain) + 1);
 
 	if(output_cipher == NULL)
 		ERROR("CALLOC");
+	fprintf(stderr, "You were given %ld bytes to work with.\n", strlen(input_plain));
 
 	short offset = 0;
 	char cipher;
 	int temp;
-	for(int i = 0; i < (int)strlen(input_plain) - 1; i++){
+	for(int i = 0; i < (int)strlen(input_plain); i++){
 		offset = key_array[i % KEY_LEN].value;
 		if(isalpha(input_plain[i])){
 			if(isupper(input_plain[i])){
@@ -110,6 +112,7 @@ void cipher_text(){
 }
 
 void handle_output(){
+	fprintf(stderr, "Size of output is %ld.\n", strlen(output_cipher));
 	printf("%s\n", output_cipher);
 }
 
